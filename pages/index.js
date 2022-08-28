@@ -4,6 +4,8 @@ import Link from 'next/link'
 import DevSlug from '../components/Common/DevSlug'
 // import styles from '../styles/Home.module.css'
 import myHeadSrc from '../public/myHead.png'
+// import {SolidityLogo, JavascriptLogo} from '../components/Common/LogoSvgs'
+import solidityLogo from "../../assets/solidity.svg";
 
 export default function Home(){
   return (
@@ -35,20 +37,22 @@ export default function Home(){
       <section className='flex flex-col space-y-8 my-8'>
         <h2 className='text-5xl font-extrabold text-transparent bg-clip-text fancy-gradient'>Projects</h2>
         <div className='grid grid-cols-3 gap-4'>
-          <div className='card px-4 py-4 ring-2'>
+          <Link href='/wishing-fountain'>
+            <a className='group'>
+            <div className='card px-4 py-4 ring-2 ring-orange-300 group-hover:ring-orange-400 '>
             <div className='flex items-center space-x-2'>
-            <span className='text-4xl filter contrast-75'>✨</span>
-            <h3 className='text-xl text-transparent bg-clip-text bg-gradient-to-r from-yellow-600 to-orange-500'> Wishing Fountain</h3>
+                <span className='text-4xl filter contrast-75'>✨</span>
+                <div className='flex flex-col items-start'>
+                <h3 className='text-xl text-transparent bg-clip-text bg-gradient-to-r from-yellow-600 to-orange-500'> Wishing Fountain</h3>
+                <p className='text-sm text-gray-500'>Drop a coin to make wishes come true!</p>
             </div>
-            <div className='px-8 py-2'>
-            <p className='text-sm text-gray-600'>Drop a coin to make wishes come true!</p>
-            {/* <Link href='/wishing-fountain'>
-              <a>Make a Wish</a>
-            </Link> */}
-            </div>
-            
-            
-          </div>
+        </div> 
+        </div>
+            </a>
+
+          </Link>
+
+        
         </div>
       </section>
     </div>
