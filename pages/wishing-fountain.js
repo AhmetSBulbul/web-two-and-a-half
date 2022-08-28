@@ -1,4 +1,6 @@
 import Head from 'next/head'
+import DevSlug from '../components/Common/DevSlug'
+import Navbar from '../components/Common/Navbar'
 
 export default function WishingFountain(){
     return (
@@ -9,9 +11,10 @@ export default function WishingFountain(){
             <link rel='icon' href='/favicon.ico'/>
             </Head>
             <main>
-            <header className='navbar'>
-          <div className='slug'>
-            <h3>@AhmetSBulbul</h3>
+                <Navbar lead="Wishing Fountain"></Navbar>
+            {/* <header className='navbar'>
+          <div className='justify-self-start'>
+            <DevSlug/>
           </div>
           <div className='justify-self-center text-2xl'>
             <h3>Web2½</h3>
@@ -19,7 +22,7 @@ export default function WishingFountain(){
           <div className='justify-self-end'>
             <h3>Menu</h3>
           </div>
-        </header>
+        </header> */}
             </main>
         </div>
     )

@@ -35,7 +35,7 @@ a {
 
 @layer components{
   .slug{
-    @apply border-2 border-gray-500 px-1 py-1 rounded-md text-gray-700 justify-self-start;
+    @apply border-2 border-gray-500 px-1 py-1 rounded-md text-gray-700;
   }
   .navbar{
     @apply py-4 my-4 grid grid-cols-3;
