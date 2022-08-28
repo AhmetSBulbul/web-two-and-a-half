@@ -1,59 +1,88 @@
 import Head from 'next/head'
 import DevSlug from '../components/Common/DevSlug'
 import Navbar from '../components/Common/Navbar'
-import Web3Modal from 'web3modal';
-import {provider, Contract} from 'ethers';
 import { useEffect, useRef, useState } from "react";
+import abi from "../utils/WishingPortal.json";
+import { ethers } from 'ethers';
 
 export default function WishingFountain(){
-    const [walletConnected, setWalletConnected] = useState(false);
-    const web3ModalRef = useRef();
+    // const [walletConnected, setWalletConnected] = useState(false);
+    // const [totalWishCount, setTotalWishCount] = useState(0);
+    const [currentAccount, setCurrentAccount] = useState("");
+    const contractAddress = "0x5fbdb2315678afecb367f032d93f642f64180aa3";
+    const contractABI = abi.abi;
+    // const web3ModalRef = useRef();
 
-    const getProviderOrSigner = async (needSigner = false) => {
-        // Connect to Metamask
-        // Since we store `web3Modal` as a reference, we need to access the `current` value to get access to the underlying object
-        const provider = await web3ModalRef.current.connect();
-        const web3Provider = new providers.Web3Provider(provider);
-  
-        // If user is not connected to the Rinkeby network, let them know and throw an error
-        const { chainId } = await web3Provider.getNetwork();
-        if (chainId !== 4) {
-          window.alert("Change the network to Rinkeby");
-          throw new Error("Change network to Rinkeby");
-        }
-  
-        if (needSigner) {
-          const signer = web3Provider.getSigner();
-          return signer;
-        }
-        return web3Provider;
-      };
-
-      const connectWallet = async () => {
+    const checkIfWalletIsConnected = async () => {
         try {
-          // Get the provider from web3Modal, which in our case is MetaMask
-          // When used for the first time, it prompts the user to connect their wallet
-          await getProviderOrSigner();
-        //   setWalletConnected(true);
-  
-        //   checkIfAddressInWhitelist();
-        //   getNumberOfWhitelisted();
-        } catch (err) {
-          console.error(err);
+            const {ethereum} = window;
+
+        if(!ethereum){
+            Window.alert("Need metamask");
+            return;
+        } else {
+            console.log("There iss: ", ethereum);
         }
-      };
+
+        const accounts = await ethereum.request({ method: "eth_accounts" });
+
+        if(accounts.length !== 0) {
+            const _account = accounts[0];
+            console.log("Found an authorized account:", _account);
+            setCurrentAccount(_account)
+            } else {
+            console.log("No auth acc found");
+            }
+        } catch(err){
+            console.log("Error on check accounts:", err);
+        }
+
+
+    }
+
+    const connectWallet = async () => {
+        try {
+            const {ethereum} = window;
+
+            if(!ethereum){
+                alert("Got Metamask");
+                return;
+            }
+
+            const accounts = await ethereum.request({ method: "eth_requestAccounts"});
+            
+            const _account = accounts[0];
+            console.log("Connected: ", _account);
+            setCurrentAccount(_account);
+        } catch(err){
+            console.log("Account cant connect: ", err);
+        }
+    }
+
+    const getWishCount = async () => {
+        try {
+            const {ethereum} = window;
+            
+            if(ethereum) {
+                const provider = new ethers.providers.Web3Provider(ethereum);
+                const signer = provider.getSigner();
+                const wishPortalContract = new ethers.Contract(contractAddress, contractABI, signer);
+
+                let count = await wishPortalContract.getTotalWishes();
+                console.log("Total wish: ", count.toNumber());
+            } else {
+                console.log("Ethereum object doesn't exist!");
+            }
+        } catch (err) {
+            console.log("error on getting count: ", err);
+        }
+    }
 
     useEffect(() => {
-        if(!walletConnected){
-            web3ModalRef.current = new Web3Modal({
-                network: "rinkeby",
-                providerOptions: {},
-                disableInjectedProvider: false,
-              });
+        checkIfWalletIsConnected();
+    }, [])
 
-              
-        }
-    })
+
     return (
         <div className='container mx-auto'>
             <Head>
@@ -66,10 +95,13 @@ export default function WishingFountain(){
                 <div className='flex flex-col py-12 items-center'>
                     <h1 className='text-5xl'>Drop a Coin to Make Wishes Come True!</h1>
                     <p>Make a wish and send it to ethereum world!</p>
+                    {!currentAccount && (<button onClick={connectWallet}>Connect Wallet</button>)}
+                    {currentAccount && (<button className='p-4 border-2 border-black' onClick={getWishCount}>Get Wish Count</button>)}
+                    {/* <p>Wish Count: {totalWishCount}</p> */}
                 </div>
                 <div className='w-1/3'>
                     <form>
-                        <label for="wisher" className='sr-only'>Your Wish...</label>
+                        <label htmlFor="wisher" className='sr-only'>Your Wish...</label>
                         <div className='flex items-center py-2 px-3 bg-gray-50 rounded-lg dark:bg-gray-700'>
                             <textarea id="wisher" rows={1} className="block p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder='Your Wish...'></textarea>
                             <button type='submit' className='inline-flex justify-center p-2 text-blue-600 rounded-full cursor-pointer hover:bg-blue-100 dark:text-blue-500 dark:hover:bg-gray-600'>
