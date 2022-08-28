@@ -40,9 +40,9 @@ export default function Home(){
           <Link href='/wishing-fountain'>
             <a className='group'>
             <div className='card px-4 py-4 ring-2 ring-orange-300 group-hover:ring-orange-400 '>
-            <div className='flex items-center space-x-2'>
+              <div className='flex items-center space-x-2'>
                 <span className='text-4xl filter contrast-75'>✨</span>
-                <div className='flex flex-col items-start'>
+              <div className='flex flex-col items-start'>
                 <h3 className='text-xl text-transparent bg-clip-text bg-gradient-to-r from-yellow-600 to-orange-500'> Wishing Fountain</h3>
                 <p className='text-sm text-gray-500'>Drop a coin to make wishes come true!</p>
             </div>
