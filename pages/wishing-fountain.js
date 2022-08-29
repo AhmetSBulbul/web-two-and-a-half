@@ -4,36 +4,40 @@ import Navbar from '../components/Common/Navbar'
 import { useEffect, useRef, useState } from "react";
 import abi from "../utils/WishingPortal.json";
 import { ethers } from 'ethers';
+import WishForm from '../components/WishingFountain/WishForm';
 
-export default function WishingFountain(){
+export default function WishingFountain() {
     // const [walletConnected, setWalletConnected] = useState(false);
     // const [totalWishCount, setTotalWishCount] = useState(0);
+    const [allWishes, setAllWishes] = useState([]);
     const [currentAccount, setCurrentAccount] = useState("");
     const contractAddress = "0x5fbdb2315678afecb367f032d93f642f64180aa3";
     const contractABI = abi.abi;
+    const [message, setMessage] = useState("");
+    const [count, setCount] = useState(0);
     // const web3ModalRef = useRef();
 
     const checkIfWalletIsConnected = async () => {
         try {
-            const {ethereum} = window;
+            const { ethereum } = window;
 
-        if(!ethereum){
-            Window.alert("Need metamask");
-            return;
-        } else {
-            console.log("There iss: ", ethereum);
-        }
-
-        const accounts = await ethereum.request({ method: "eth_accounts" });
-
-        if(accounts.length !== 0) {
-            const _account = accounts[0];
-            console.log("Found an authorized account:", _account);
-            setCurrentAccount(_account)
+            if (!ethereum) {
+                Window.alert("Need metamask");
+                return;
             } else {
-            console.log("No auth acc found");
+                console.log("There is metamas")
             }
-        } catch(err){
+
+            const accounts = await ethereum.request({ method: "eth_accounts" });
+
+            if (accounts.length !== 0) {
+                const _account = accounts[0];
+                console.log("Found an authorized account:", _account);
+                setCurrentAccount(_account)
+            } else {
+                console.log("No auth acc found");
+            }
+        } catch (err) {
             console.log("Error on check accounts:", err);
         }
 
@@ -42,34 +46,113 @@ export default function WishingFountain(){
 
     const connectWallet = async () => {
         try {
-            const {ethereum} = window;
+            const { ethereum } = window;
 
-            if(!ethereum){
+            if (!ethereum) {
                 alert("Got Metamask");
                 return;
             }
 
-            const accounts = await ethereum.request({ method: "eth_requestAccounts"});
-            
+            const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+
             const _account = accounts[0];
             console.log("Connected: ", _account);
             setCurrentAccount(_account);
-        } catch(err){
+        } catch (err) {
             console.log("Account cant connect: ", err);
+        }
+    }
+
+    const getAllWishes = async () => {
+        try {
+
+            const { ethereum } = window;
+
+            if (ethereum) {
+                const provider = new ethers.providers.Web3Provider(ethereum);
+                const signer = provider.getSigner();
+                const wishPortalContract = new ethers.Contract(contractAddress, contractABI, signer);
+
+                const wishes = await wishPortalContract.getAllWishes();
+
+                console.log("wishes : \n", wishes);
+
+
+                let _tempList = [];
+
+                wishes.forEach(wish => {
+                    _tempList.push({
+                        address: wish.wisher,
+                        timestamp: new Date(wish.timestamp * 1000),
+                        message: wish.message
+                    });
+                });
+
+                console.log(_tempList);
+
+                setAllWishes(_tempList);
+            }
+
+        } catch (err) {
+            console.log("eeror while getting all wishes: ", err);
+        }
+    }
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        makeWish();
+    }
+
+    const makeWish = async () => {
+
+        try {
+            const { ethereum } = window;
+
+            if (ethereum) {
+                console.log(message);
+                const provider = new ethers.providers.Web3Provider(ethereum);
+                const signer = provider.getSigner();
+                const wishPortalContract = new ethers.Contract(contractAddress, contractABI, signer);
+
+
+
+
+
+
+                const wishTxn = await wishPortalContract.wish(message)
+                console.log("Mining... :", wishTxn.hash);
+
+                await wishTxn.wait();
+                console.log("Mined -- ", wishTxn.hash);
+
+                getWishCount()
+
+
+                // count = await wishPortalContract.getTotalWishes();
+                // console.log("Total wish: ", count.toNumber());
+            } else {
+                console.log("Ethereum object doesn't exist!");
+            }
+        } catch (err) {
+            console.log("error on getting count: ", err);
         }
     }
 
     const getWishCount = async () => {
         try {
-            const {ethereum} = window;
-            
-            if(ethereum) {
+            const { ethereum } = window;
+
+            if (ethereum) {
                 const provider = new ethers.providers.Web3Provider(ethereum);
                 const signer = provider.getSigner();
                 const wishPortalContract = new ethers.Contract(contractAddress, contractABI, signer);
 
                 let count = await wishPortalContract.getTotalWishes();
                 console.log("Total wish: ", count.toNumber());
+                setCount(count.toNumber());
+
+                // count = await wishPortalContract.getTotalWishes();
+                // console.log("Total wish: ", count.toNumber());
             } else {
                 console.log("Ethereum object doesn't exist!");
             }
@@ -80,38 +163,54 @@ export default function WishingFountain(){
 
     useEffect(() => {
         checkIfWalletIsConnected();
-    }, [])
+        getWishCount();
+    }, [count])
 
 
     return (
-        <div className='container mx-auto'>
+        <div className='relative'>
             <Head>
-            <title>Web2½ | Wishing Fountain</title>
-            <meta name='description' content='Drop a coin to make wishes come true'/>
-            <link rel='icon' href='/favicon.ico'/>
+                <title>Web2½ | Wishing Fountain</title>
+                <meta name='description' content='Drop a coin to make wishes come true' />
+                <link rel='icon' href='/favicon.ico' />
             </Head>
-            <main>
+            <main className='container mx-auto '>
                 <Navbar lead="Wishing Fountain"></Navbar>
-                <div className='flex flex-col py-12 items-center'>
+                <div className='flex flex-col py-12 items-center space-y-4'>
                     <h1 className='text-5xl'>Drop a Coin to Make Wishes Come True!</h1>
-                    <p>Make a wish and send it to ethereum world!</p>
-                    {!currentAccount && (<button onClick={connectWallet}>Connect Wallet</button>)}
-                    {currentAccount && (<button className='p-4 border-2 border-black' onClick={getWishCount}>Get Wish Count</button>)}
-                    {/* <p>Wish Count: {totalWishCount}</p> */}
-                </div>
-                <div className='w-1/3'>
-                    <form>
+                    <p>Make a wish and send it to ethereum world! Count: {count}</p>
+                    {!currentAccount && (<button className='btn' onClick={connectWallet}>Connect Wallet</button>)}
+                    {currentAccount && (<button className='btn' onClick={getAllWishes}>Get Wish Count</button>)}
+                    <form onSubmit={handleSubmit}>
                         <label htmlFor="wisher" className='sr-only'>Your Wish...</label>
                         <div className='flex items-center py-2 px-3 bg-gray-50 rounded-lg dark:bg-gray-700'>
-                            <textarea id="wisher" rows={1} className="block p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder='Your Wish...'></textarea>
+                            <textarea id="wisher" value={message} onChange={(e) => setMessage(e.target.value)} rows={1} className="block p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder='Your Wish...'></textarea>
                             <button type='submit' className='inline-flex justify-center p-2 text-blue-600 rounded-full cursor-pointer hover:bg-blue-100 dark:text-blue-500 dark:hover:bg-gray-600'>
-                            <svg aria-hidden="true" className="w-6 h-6 rotate-90" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path></svg>
+                                <svg aria-hidden="true" className="w-6 h-6 rotate-90" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path></svg>
                             </button>
                         </div>
                     </form>
+                    {/* <p>Wish Count: {totalWishCount}</p> */}
                 </div>
-                
+                <div flex flex-col space-y-4>
+                    {allWishes.map((wish, index) => {
+                        return (
+                            <div key={index} className='flex flex-col space-y-2 p-4 border-2 border-black'>
+                                <h3>Address: {wish.address}</h3>
+                                <p>Time: {wish.timestamp.toString()}</p>
+                                <p>Message: {wish.message}</p>
+                            </div>
+                        )
+                    })}
+                </div>
+
+
             </main>
+            {/* <div className='absolute w-screen h-screen bg-black bg-opacity-40 left-0 -top-4 overflow-visible flex'>
+                <div className='card m-auto h-20 w-20 bg-white'>
+                    Test
+                </div>
+            </div> */}
         </div>
     )
 }
