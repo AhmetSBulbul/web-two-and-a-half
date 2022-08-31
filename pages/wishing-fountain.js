@@ -11,7 +11,7 @@ export default function WishingFountain() {
     // const [totalWishCount, setTotalWishCount] = useState(0);
     const [allWishes, setAllWishes] = useState([]);
     const [currentAccount, setCurrentAccount] = useState("");
-    const contractAddress = "0x5fbdb2315678afecb367f032d93f642f64180aa3";
+    const contractAddress = "0xE1436940c82e18CF454678E7f898DeaD51F4Bc64";
     const contractABI = abi.abi;
     const [message, setMessage] = useState("");
     const [count, setCount] = useState(0);
@@ -31,7 +31,9 @@ export default function WishingFountain() {
             const accounts = await ethereum.request({ method: "eth_accounts" });
 
             if (accounts.length !== 0) {
+                console.log(accounts.length);
                 const _account = accounts[0];
+                console.log(_account.getBalance);
                 console.log("Found an authorized account:", _account);
                 setCurrentAccount(_account)
             } else {
@@ -73,7 +75,7 @@ export default function WishingFountain() {
                 const signer = provider.getSigner();
                 const wishPortalContract = new ethers.Contract(contractAddress, contractABI, signer);
 
-                const wishes = await wishPortalContract.getAllWishes();
+                const wishes = await wishPortalContract.getWishList();
 
                 console.log("wishes : \n", wishes);
 
@@ -84,11 +86,12 @@ export default function WishingFountain() {
                     _tempList.push({
                         address: wish.wisher,
                         timestamp: new Date(wish.timestamp * 1000),
-                        message: wish.message
+                        message: wish.wish
                     });
                 });
 
                 console.log(_tempList);
+                wishPortalContract.on('NewWish', (data) => console.log("Eventten geldi: " + data))
 
                 setAllWishes(_tempList);
             }
@@ -113,17 +116,19 @@ export default function WishingFountain() {
                 const provider = new ethers.providers.Web3Provider(ethereum);
                 const signer = provider.getSigner();
                 const wishPortalContract = new ethers.Contract(contractAddress, contractABI, signer);
+                wishPortalContract.on('NewWinner', (data) => console.log("Winner hee: " + data))
 
 
 
 
 
 
-                const wishTxn = await wishPortalContract.wish(message)
+                const wishTxn = await wishPortalContract.newWish(message, {value: ethers.utils.parseEther("0.0001"), gasLimit: 300000});
                 console.log("Mining... :", wishTxn.hash);
 
                 await wishTxn.wait();
                 console.log("Mined -- ", wishTxn.hash);
+                
 
                 getWishCount()
 
@@ -146,10 +151,13 @@ export default function WishingFountain() {
                 const provider = new ethers.providers.Web3Provider(ethereum);
                 const signer = provider.getSigner();
                 const wishPortalContract = new ethers.Contract(contractAddress, contractABI, signer);
+                let avatarUrl = await provider.getNetwork();
+                console.log(avatarUrl);
+                // console.log(provider.resolveName);
 
-                let count = await wishPortalContract.getTotalWishes();
-                console.log("Total wish: ", count.toNumber());
-                setCount(count.toNumber());
+                let count = await wishPortalContract.getBalance();
+                console.log("Total wish: ", ethers.utils.formatEther(count));
+                setCount(ethers.utils.formatEther(count));
 
                 // count = await wishPortalContract.getTotalWishes();
                 // console.log("Total wish: ", count.toNumber());
@@ -192,7 +200,7 @@ export default function WishingFountain() {
                     </form>
                     {/* <p>Wish Count: {totalWishCount}</p> */}
                 </div>
-                <div flex flex-col space-y-4>
+                <div className='flex flex-col space-y-4'>
                     {allWishes.map((wish, index) => {
                         return (
                             <div key={index} className='flex flex-col space-y-2 p-4 border-2 border-black'>
