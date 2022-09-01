@@ -221,7 +221,10 @@ export default function WishingFountain() {
                 <meta name='description' content='Drop a coin to make wishes come true' />
                 <link rel='icon' href='/favicon.ico' />
             </Head>
-        <MetaMaskWrapper>
+        <MetaMaskWrapper chainId={"0x4"} chainName={"Rinkeby"} chainRpcUrls={[
+            "https://rpc.ankr.com/eth_rinkeby",
+            "https://rinkeby.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"
+        ]}>
             
             <main className='container mx-auto '>
                 <Navbar lead="Wishing Fountain"></Navbar>
