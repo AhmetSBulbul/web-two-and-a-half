@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import abi from "../utils/WishingPortal.json";
 import { ethers } from 'ethers';
 import WishForm from '../components/WishingFountain/WishForm';
+import MetaMaskWrapper from '../components/MetaMask/MetaMaskWrapper';
 
 export default function WishingFountain() {
     // const [walletConnected, setWalletConnected] = useState(false);
@@ -15,55 +16,93 @@ export default function WishingFountain() {
     const contractABI = abi.abi;
     const [message, setMessage] = useState("");
     const [count, setCount] = useState(0);
+    // const [isMetaMaskInstalled, setIsMetaMaskInstalled] = useState(false);
+
+    // useEffect(() => {
+    //     console.log(isMetaMaskInstalled);
+    //     if(window.ethereum){
+    //         console.log(window.ethereum);
+    //         setIsMetaMaskInstalled(true);
+    //     }
+    // }, [isMetaMaskInstalled])
     // const web3ModalRef = useRef();
 
-    const checkIfWalletIsConnected = async () => {
-        try {
-            const { ethereum } = window;
+    useEffect(() => {
+        let wishContractPortal;
 
-            if (!ethereum) {
-                Window.alert("Need metamask");
-                return;
-            } else {
-                console.log("There is metamas")
-            }
-
-            const accounts = await ethereum.request({ method: "eth_accounts" });
-
-            if (accounts.length !== 0) {
-                console.log(accounts.length);
-                const _account = accounts[0];
-                console.log(_account.getBalance);
-                console.log("Found an authorized account:", _account);
-                setCurrentAccount(_account)
-            } else {
-                console.log("No auth acc found");
-            }
-        } catch (err) {
-            console.log("Error on check accounts:", err);
+        const onNewWish = (from, timestamp, message) => {
+            console.log("New Wish", from, timestamp, message);
+            setAllWishes(prevState => [
+                ...prevState,
+                {
+                    address: from,
+                    timestamp: new Date(timestamp * 1000),
+                    message: message,
+                },
+            ]);
         }
 
-
-    }
-
-    const connectWallet = async () => {
-        try {
-            const { ethereum } = window;
-
-            if (!ethereum) {
-                alert("Got Metamask");
-                return;
-            }
-
-            const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-
-            const _account = accounts[0];
-            console.log("Connected: ", _account);
-            setCurrentAccount(_account);
-        } catch (err) {
-            console.log("Account cant connect: ", err);
+        if(window.ethereum){
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+            wishContractPortal = new ethers.Contract(contractAddress, contractABI, signer);
+            wishContractPortal.on("NewWish", onNewWish);
         }
-    }
+        
+        return () => {
+            if (wishContractPortal) {
+              wishContractPortal.off("NewWish", onNewWish);
+            }
+          };
+        }, []);
+
+    // const checkIfWalletIsConnected = async () => {
+    //     try {
+    //         const { ethereum } = window;
+
+    //         if (!ethereum) {
+    //             Window.alert("Need metamask");
+    //             return;
+    //         } else {
+    //             console.log("There is metamas")
+    //         }
+
+    //         const accounts = await ethereum.request({ method: "eth_accounts" });
+
+    //         if (accounts.length !== 0) {
+    //             console.log(accounts.length);
+    //             const _account = accounts[0];
+    //             console.log(_account.getBalance);
+    //             console.log("Found an authorized account:", _account);
+    //             setCurrentAccount(_account)
+    //         } else {
+    //             console.log("No auth acc found");
+    //         }
+    //     } catch (err) {
+    //         console.log("Error on check accounts:", err);
+    //     }
+
+
+    // }
+
+    // const connectWallet = async () => {
+    //     try {
+    //         const { ethereum } = window;
+
+    //         if (!ethereum) {
+    //             alert("Got Metamask");
+    //             return;
+    //         }
+
+    //         const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+
+    //         const _account = accounts[0];
+    //         console.log("Connected: ", _account);
+    //         setCurrentAccount(_account);
+    //     } catch (err) {
+    //         console.log("Account cant connect: ", err);
+    //     }
+    // }
 
     const getAllWishes = async () => {
         try {
@@ -169,10 +208,10 @@ export default function WishingFountain() {
         }
     }
 
-    useEffect(() => {
-        checkIfWalletIsConnected();
-        getWishCount();
-    }, [count])
+    // useEffect(() => {
+    //     checkIfWalletIsConnected();
+    //     getWishCount();
+    // }, [count])
 
 
     return (
@@ -182,12 +221,14 @@ export default function WishingFountain() {
                 <meta name='description' content='Drop a coin to make wishes come true' />
                 <link rel='icon' href='/favicon.ico' />
             </Head>
+        <MetaMaskWrapper>
+            
             <main className='container mx-auto '>
                 <Navbar lead="Wishing Fountain"></Navbar>
                 <div className='flex flex-col py-12 items-center space-y-4'>
                     <h1 className='text-5xl'>Drop a Coin to Make Wishes Come True!</h1>
                     <p>Make a wish and send it to ethereum world! Count: {count}</p>
-                    {!currentAccount && (<button className='btn' onClick={connectWallet}>Connect Wallet</button>)}
+                    {/* {!currentAccount && (<button className='btn' onClick={connectWallet}>Connect Wallet</button>)} */}
                     {currentAccount && (<button className='btn' onClick={getAllWishes}>Get Wish Count</button>)}
                     <form onSubmit={handleSubmit}>
                         <label htmlFor="wisher" className='sr-only'>Your Wish...</label>
@@ -211,14 +252,10 @@ export default function WishingFountain() {
                         )
                     })}
                 </div>
-
-
             </main>
-            {/* <div className='absolute w-screen h-screen bg-black bg-opacity-40 left-0 -top-4 overflow-visible flex'>
-                <div className='card m-auto h-20 w-20 bg-white'>
-                    Test
-                </div>
-            </div> */}
+        
+        </MetaMaskWrapper>
         </div>
+        
     )
 }
