@@ -11,11 +11,12 @@ export default function WishingFountain() {
     // const [walletConnected, setWalletConnected] = useState(false);
     // const [totalWishCount, setTotalWishCount] = useState(0);
     const [allWishes, setAllWishes] = useState([]);
-    const [currentAccount, setCurrentAccount] = useState("");
+    // const [currentAccount, setCurrentAccount] = useState("");
     const contractAddress = "0xE1436940c82e18CF454678E7f898DeaD51F4Bc64";
     const contractABI = abi.abi;
     const [message, setMessage] = useState("");
-    const [count, setCount] = useState(0);
+    const [isLoading, setIsLoading] = useState(false);
+    // const [count, setCount] = useState(0);
     // const [isMetaMaskInstalled, setIsMetaMaskInstalled] = useState(false);
 
     // useEffect(() => {
@@ -42,16 +43,23 @@ export default function WishingFountain() {
             ]);
         }
 
+        const onNewWinner = (from, timestamp, message, price) => {
+            console.log("New Winner", from, timestamp, message, price);
+        }
+
         if(window.ethereum){
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const signer = provider.getSigner();
             wishContractPortal = new ethers.Contract(contractAddress, contractABI, signer);
             wishContractPortal.on("NewWish", onNewWish);
+            wishContractPortal.on("NewWinner", onNewWinner);
+            
         }
         
         return () => {
             if (wishContractPortal) {
               wishContractPortal.off("NewWish", onNewWish);
+              wishContractPortal.off("NewWinner", onNewWinner);
             }
           };
         }, []);
@@ -129,9 +137,6 @@ export default function WishingFountain() {
                     });
                 });
 
-                console.log(_tempList);
-                wishPortalContract.on('NewWish', (data) => console.log("Eventten geldi: " + data))
-
                 setAllWishes(_tempList);
             }
 
@@ -155,7 +160,6 @@ export default function WishingFountain() {
                 const provider = new ethers.providers.Web3Provider(ethereum);
                 const signer = provider.getSigner();
                 const wishPortalContract = new ethers.Contract(contractAddress, contractABI, signer);
-                wishPortalContract.on('NewWinner', (data) => console.log("Winner hee: " + data))
 
 
 
@@ -163,13 +167,13 @@ export default function WishingFountain() {
 
 
                 const wishTxn = await wishPortalContract.newWish(message, {value: ethers.utils.parseEther("0.0001"), gasLimit: 300000});
+                setIsLoading(true);
                 console.log("Mining... :", wishTxn.hash);
 
+                
                 await wishTxn.wait();
                 console.log("Mined -- ", wishTxn.hash);
-                
-
-                getWishCount()
+                setIsLoading(false);
 
 
                 // count = await wishPortalContract.getTotalWishes();
@@ -182,31 +186,31 @@ export default function WishingFountain() {
         }
     }
 
-    const getWishCount = async () => {
-        try {
-            const { ethereum } = window;
+    // const getWishCount = async () => {
+    //     try {
+    //         const { ethereum } = window;
 
-            if (ethereum) {
-                const provider = new ethers.providers.Web3Provider(ethereum);
-                const signer = provider.getSigner();
-                const wishPortalContract = new ethers.Contract(contractAddress, contractABI, signer);
-                let avatarUrl = await provider.getNetwork();
-                console.log(avatarUrl);
-                // console.log(provider.resolveName);
+    //         if (ethereum) {
+    //             const provider = new ethers.providers.Web3Provider(ethereum);
+    //             const signer = provider.getSigner();
+    //             const wishPortalContract = new ethers.Contract(contractAddress, contractABI, signer);
+    //             let avatarUrl = await provider.getNetwork();
+    //             console.log(avatarUrl);
+    //             // console.log(provider.resolveName);
 
-                let count = await wishPortalContract.getBalance();
-                console.log("Total wish: ", ethers.utils.formatEther(count));
-                setCount(ethers.utils.formatEther(count));
+    //             let count = await wishPortalContract.getBalance();
+    //             console.log("Total wish: ", ethers.utils.formatEther(count));
+    //             setCount(ethers.utils.formatEther(count));
 
-                // count = await wishPortalContract.getTotalWishes();
-                // console.log("Total wish: ", count.toNumber());
-            } else {
-                console.log("Ethereum object doesn't exist!");
-            }
-        } catch (err) {
-            console.log("error on getting count: ", err);
-        }
-    }
+    //             // count = await wishPortalContract.getTotalWishes();
+    //             // console.log("Total wish: ", count.toNumber());
+    //         } else {
+    //             console.log("Ethereum object doesn't exist!");
+    //         }
+    //     } catch (err) {
+    //         console.log("error on getting count: ", err);
+    //     }
+    // }
 
     // useEffect(() => {
     //     checkIfWalletIsConnected();
@@ -230,9 +234,9 @@ export default function WishingFountain() {
                 <Navbar lead="Wishing Fountain"></Navbar>
                 <div className='flex flex-col py-12 items-center space-y-4'>
                     <h1 className='text-5xl'>Drop a Coin to Make Wishes Come True!</h1>
-                    <p>Make a wish and send it to ethereum world! Count: {count}</p>
+                    <p>{isLoading ? "..." : "Make a wish and send it to ethereum world!"}</p>
                     {/* {!currentAccount && (<button className='btn' onClick={connectWallet}>Connect Wallet</button>)} */}
-                    {currentAccount && (<button className='btn' onClick={getAllWishes}>Get Wish Count</button>)}
+                    {allWishes.length == 0 && (<button className='btn' onClick={getAllWishes}>Get Wish Count</button>)}
                     <form onSubmit={handleSubmit}>
                         <label htmlFor="wisher" className='sr-only'>Your Wish...</label>
                         <div className='flex items-center py-2 px-3 bg-gray-50 rounded-lg dark:bg-gray-700'>
