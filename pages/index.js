@@ -3,7 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 // import DevSlug from '../components/Common/DevSlug'
 // import styles from '../styles/Home.module.css'
-import myHeadSrc from '../../assets/myHead.png'
+// import myHeadSrc from '../../assets/myHead.png'
 // import {SolidityLogo, JavascriptLogo} from '../components/Common/LogoSvgs'
 // import solidityLogo from "../../assets/solidity.svg";
 import Slug from '../components/slug/Slug'
