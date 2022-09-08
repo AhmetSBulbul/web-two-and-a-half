@@ -30,7 +30,7 @@ export default function Home(){
         </header>
         <div className='card flex flex-col justify-items-center content-center border-2 border-black px-8 py-12 space-y-12 bg-surface text-highlight'>
           <div className='w-1/5 mx-auto'>
-          <Image src='/myHead.png' className='object-contain'/>
+          <Image src='/myHead.png' width={100} height={100} className='object-contain'/>
           </div>
           <h2 className='text-3xl text-center font-bold'>Simple Web3 Projects</h2>
         </div>
