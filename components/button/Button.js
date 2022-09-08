@@ -4,7 +4,7 @@ import React from 'react';
 
 export const Button = ({primary, size, label, ...props}) => {
     return (
-        <button type='button' className='border-2 px-4 py-2 rounded-md border-black font-bold'  {...props}>
+        <button type='button' className='framed px-4 py-2 font-bold'  {...props}>
             {label}
         </button>
     )

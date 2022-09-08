@@ -21,18 +21,18 @@ export default function Home(){
           <div className='justify-self-start'>
             <Slug/>
           </div>
-          <div className='justify-self-center text-2xl'>
+          <div className='justify-self-center text-2xl framed'>
             <h3>Web2½</h3>
           </div>
-          <div className='justify-self-end'>
+          <div className='justify-self-end self-center framed'>
             <h3>Menu</h3>
           </div>
         </header>
-        <div className='card flex flex-col justify-items-center content-center border-2 border-black px-8 py-12 space-y-12 bg-surface text-highlight'>
-          <div className='w-1/5 mx-auto'>
+        <div className='framed flex flex-col justify-items-center content-center px-8 py-12 space-y-12 bg-surface text-highlight'>
+          {/* <div className='w-1/5 mx-auto'>
           <Image src='/myHead.png' width={100} height={100} className='object-contain'/>
-          </div>
-          <h2 className='text-3xl text-center font-bold'>Simple Web3 Projects</h2>
+          </div> */}
+          <h2 className='text-3xl text-center font-bold'>Web Two And A Half</h2>
         </div>
       </main>
       <section className='flex flex-col space-y-8 my-8'>
