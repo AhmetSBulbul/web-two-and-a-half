@@ -6,6 +6,7 @@ import DevSlug from '../components/Common/DevSlug'
 import myHeadSrc from '../public/myHead.png'
 // import {SolidityLogo, JavascriptLogo} from '../components/Common/LogoSvgs'
 import solidityLogo from "../../assets/solidity.svg";
+import Slug from '../components/slug/Slug'
 
 export default function Home(){
   return (
@@ -18,7 +19,7 @@ export default function Home(){
       <main>
         <header className='navbar'>
           <div className='justify-self-start'>
-            <DevSlug/>
+            <Slug/>
           </div>
           <div className='justify-self-center text-2xl'>
             <h3>Web2½</h3>
@@ -27,11 +28,11 @@ export default function Home(){
             <h3>Menu</h3>
           </div>
         </header>
-        <div className='card flex flex-col justify-items-center content-center fancy-gradient px-8 py-12 space-y-12'>
+        <div className='card flex flex-col justify-items-center content-center border-2 border-black px-8 py-12 space-y-12 bg-surface text-highlight'>
           <div className='w-1/5 mx-auto'>
           <Image src={myHeadSrc} className='object-contain'/>
           </div>
-          <h2 className='text-white text-3xl text-center font-bold'>Simple Web3 Projects</h2>
+          <h2 className='text-3xl text-center font-bold'>Simple Web3 Projects</h2>
         </div>
       </main>
       <section className='flex flex-col space-y-8 my-8'>

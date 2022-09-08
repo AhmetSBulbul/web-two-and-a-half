@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 import React, { useEffect, useState } from 'react';
+import { Button } from '../button/Button';
 
 const MetaMaskWrapper = ({ chainId, chainName, chainRpcUrls, children }) => {
     const [account, setAccount] = useState("");
@@ -95,7 +96,13 @@ const MetaMaskWrapper = ({ chainId, chainName, chainRpcUrls, children }) => {
     if (account) {
         return (<>{children}</>)
     } else {
-        return <div className='bg-black w-screen h-screen flex'><button className='btn bg-white' onClick={connectWallet}>Connect Wallet</button></div>
+        return (
+            <div className='w-screen h-screen flex flex-col space-y-4 justify-center items-center'>
+                <h1 className='font-bold text-2xl'>Metamask is Required</h1>
+                <Button onClick={connectWallet} label="Connect Wallet"/>
+            </div>
+        )
+        // return <div className='bg-black w-screen h-screen flex'><button className='btn bg-white' onClick={connectWallet}>Connect Wallet</button></div>
     }
 
 }
