@@ -32,7 +32,7 @@ export default function WishingFountain() {
         let wishContractPortal;
 
         const onNewWish = (from, timestamp, message) => {
-            console.log("New Wish", from, timestamp, message);
+            console.log("New Wishh", from, timestamp, message);
             setAllWishes(prevState => [
                 ...prevState,
                 {
