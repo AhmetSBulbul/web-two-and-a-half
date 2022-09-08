@@ -35,6 +35,21 @@ a {
 }
 
 @layer components{
+  .app{
+    @apply h-screen overflow-auto bg-surface text-center;
+  }
+
+  .app-container{
+    @apply h-full flex flex-col justify-center relative px-10;
+  }
+
+  .app-header{
+    @apply flex justify-center items-center mb-10 absolute top-0 left-0 w-full;
+  }
+
+  .app-footer{
+    @apply absolute items-center flex justify-center w-full bottom-0 left-0 pb-10;
+  }
   .slug{
     @apply border-2 border-gray-500 px-1 py-1 rounded-md text-gray-700;
   }
@@ -54,6 +69,16 @@ a {
   .framed{
     @apply border-2 border-black rounded-md py-2 px-4;
   }
+
+  .drop-frame{
+    @apply relative z-0 bg-black;
+  }
+
+  .drop-frame::before{
+    @apply absolute top-4 left-4 bg-black w-full h-full border-2 border-black -z-10;
+    content: '';}
+
+
 
   
 }

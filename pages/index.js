@@ -1,3 +1,4 @@
+import {useEffect} from 'react';
 import Head from 'next/head'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -9,6 +10,7 @@ import Link from 'next/link'
 import Slug from '../components/slug/Slug'
 
 export default function Home(){
+
   return (
     <div className='container mx-auto'>
       <Head>
