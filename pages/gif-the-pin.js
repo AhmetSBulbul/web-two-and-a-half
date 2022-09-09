@@ -4,6 +4,7 @@ import { Button } from '../components/button/Button';
 import idl from '../utils/gif-the-pin-idl.json';
 import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
 import { Program, AnchorProvider, web3 } from '@project-serum/anchor';
+import kp from '../utils/anchor-keypair.json';
 
 const TEST_GIFS = [
     "https://media.giphy.com/media/SDogLD4FOZMM8/giphy.gif",
@@ -15,7 +16,10 @@ const TEST_GIFS = [
 
 const { SystemProgram, Keypair } = web3;
 
-let baseAccount = Keypair.generate();
+// let baseAccount = Keypair.generate();
+const arr = Object.values(kp._keypair.secretKey)
+const secret = new Uint8Array(arr)
+const baseAccount = web3.Keypair.fromSecretKey(secret)
 
 const programID = new PublicKey(idl.metadata.address);
 
@@ -70,11 +74,13 @@ export default function GifThePin() {
     }
 
     const getProvider = () => {
+        console.log("ping 1")
         
             const connection = new Connection(network, opts.preflightCommitment);
         const provider = new AnchorProvider(
           connection, window.solana, opts.preflightCommitment,
         );
+        console.log("ping 2")
           return provider;
      
       }
@@ -103,7 +109,9 @@ export default function GifThePin() {
 
     const getGifList = async () => {
         try {
+            console.log("ping 0")
             const provider = getProvider();
+            console.log("ping 3")
             const program = new Program(idl, programID, provider);
             const account = await program.account.baseAccount.fetch(baseAccount.publicKey);
 
