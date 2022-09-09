@@ -1,6 +1,9 @@
 import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
 import { Button } from '../components/button/Button';
+import idl from '../utils/gif-the-pin-idl.json';
+import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
+import { Program, AnchorProvider, web3 } from '@project-serum/anchor';
 
 const TEST_GIFS = [
     "https://media.giphy.com/media/SDogLD4FOZMM8/giphy.gif",
@@ -9,6 +12,18 @@ const TEST_GIFS = [
     "https://media.giphy.com/media/lMsT2f47tDxFMYdJMC/giphy.gif",
     "https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif",
 ]
+
+const { SystemProgram, Keypair } = web3;
+
+let baseAccount = Keypair.generate();
+
+const programID = new PublicKey(idl.metadata.address);
+
+const network = clusterApiUrl('devnet');
+
+const opts = {
+    preflightCommitment: "processed"
+}
 
 export default function GifThePin() {
     const [phantomWalletAddress, setPhantomWalletAddress] = useState(null);
@@ -50,8 +65,54 @@ export default function GifThePin() {
     }
 
     const onInputChange = (e) => {
-        const {value} = event.target;
+        const { value } = event.target;
         setInputValue(value);
+    }
+
+    const getProvider = () => {
+        
+            const connection = new Connection(network, opts.preflightCommitment);
+        const provider = new AnchorProvider(
+          connection, window.solana, opts.preflightCommitment,
+        );
+          return provider;
+     
+      }
+
+    const createGifAccount = async () => {
+       
+            try {
+                const provider = getProvider();
+                const program = new Program(idl, programID, provider);
+                console.log('ping');
+    
+                await program.rpc.startStuffOff({
+                    accounts: {
+                        baseAccount: baseAccount.publicKey,
+                        user: provider.wallet.publicKey,
+                        systemProgram: SystemProgram.programId,
+                    },
+                    signers: [baseAccount]
+                });
+                console.log("Created a new Base Account w/ address: ", baseAccount.publicKey.toString());
+                await getGifList();
+            } catch (error) {
+                console.log("Error creating BaseAccount account:", error);
+            }
+    }
+
+    const getGifList = async () => {
+        try {
+            const provider = getProvider();
+            const program = new Program(idl, programID, provider);
+            const account = await program.account.baseAccount.fetch(baseAccount.publicKey);
+
+            console.log("Got the account", account);
+            setGifList(account.gifList)
+        } catch (error) {
+            console.log("Error in getGifList: ", error)
+            setGifList(null);
+        }
     }
 
     const sendGif = async () => {
@@ -64,25 +125,35 @@ export default function GifThePin() {
         }
     }
 
-    const renderConnectedContainer = () => (
-        <div className='container mx-auto flex flex-col'>
-            <form onSubmit={(e) => {
-                e.preventDefault();
-                sendGif();
-            }}>
-                <input type="text" value={inputValue} onChange={onInputChange} placeholder='Enter gif link' className='drop-frame px-4 py-2 framed bg-surface mx-4'/>
-                <Button type='submit' label='Submit'/>
-            </form>
-            <div className="grid grid-cols-3 gap-24 place-items-center object-contain">
-                {gifList.map((gif, index) => (
-                    <div className="border-4 border-black drop-frame" key={gif}>
-                        <img src={gif} alt="gif" className='object-contain' />
-                        {/* <Image src={gif} layout="fill" style={{height:"140px", objectFit:"contain", height:"auto"}} objectFit='contain' /> */}
+    const renderConnectedContainer = () => {
+        if (gifList === null) {
+            return (
+                <div className='flex flex-col justify-center items-center'>
+                    <Button onClick={createGifAccount} label="Do One-Time Initialization For GIF Program Account" />
+                </div>
+            )
+        } else {
+            return (
+                <div className='container mx-auto flex flex-col'>
+                    <form onSubmit={(e) => {
+                        e.preventDefault();
+                        sendGif();
+                    }}>
+                        <input type="text" value={inputValue} onChange={onInputChange} placeholder='Enter gif link' className='drop-frame px-4 py-2 framed bg-surface mx-4' />
+                        <Button type='submit' label='Submit' />
+                    </form>
+                    <div className="grid grid-cols-3 gap-24 place-items-center object-contain">
+                        {gifList.map((item, index) => (
+                            <div className="border-4 border-black drop-frame" key={index}>
+                                <img src={item.gifLink} alt="gif" className='object-contain' />
+                                {/* <Image src={gif} layout="fill" style={{height:"140px", objectFit:"contain", height:"auto"}} objectFit='contain' /> */}
+                            </div>
+                        ))}
                     </div>
-                ))}
-            </div>
-        </div>
-    )
+                </div>
+            )
+        }
+    }
 
     const renderNotConnectedContainer = () => (
         <div className='flex flex-col justify-center items-center'>
@@ -90,13 +161,14 @@ export default function GifThePin() {
         </div>
     )
 
-   
+
 
     useEffect(() => {
-        if(phantomWalletAddress) {
+        if (phantomWalletAddress) {
             console.log('Fetching Gif List...');
-            setGifList(TEST_GIFS);
-            
+            //setGifList(TEST_GIFS);
+            getGifList();
+
         }
     }, [phantomWalletAddress]);
 
